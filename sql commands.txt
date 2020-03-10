@@ -1,0 +1,476 @@
+--------------------------------------------------------
+-- BRISANJE TABELA, SEKVENCI I TRIGERA
+--------------------------------------------------------
+DROP TABLE "FOTOGRAFIJA" cascade constraints;
+DROP TABLE "PRAVNI_ZASTUPNIK" cascade constraints;
+DROP TABLE "NEKRETNINA" cascade constraints;
+DROP TABLE "AGENT" cascade constraints;
+DROP TABLE "ADMINISTRATOR" cascade constraints;
+DROP TABLE "KLIJENT" cascade constraints;
+DROP TABLE "UGOVOR" cascade constraints;
+DROP TABLE "PRODAJNI_UGOVOR" cascade constraints;
+DROP TABLE "IZNAJMLJIVANJE_UGOVOR" cascade constraints;
+DROP TABLE "POTPISANI_UGOVORI" cascade constraints;
+DROP SEQUENCE "FOTOGRAFIJA_ID_SEQ";
+DROP SEQUENCE "PRAVNI_ZASTUPNIK_ID_SEQ";
+DROP SEQUENCE "NEKRETNINA_ID_SEQ";
+DROP SEQUENCE "AGENT_ID_SEQ";
+DROP SEQUENCE "ADMINISTRATOR_ID_SEQ";
+DROP SEQUENCE "KLIJENT_ID_SEQ";
+DROP SEQUENCE "UGOVOR_ID_SEQ";
+DROP TRIGGER FOTOGRAFIJA_AUTO_PK;
+DROP TRIGGER PRAVNI_ZASTUPNIK_AUTO_PK;
+DROP TRIGGER NEKRETNINA_AUTO_PK;
+DROP TRIGGER AGENT_AUTO_PK;
+DROP TRIGGER ADMINISTRATOR_AUTO_PK;
+DROP TRIGGER KLIJENT_AUTO_PK;
+DROP TRIGGER UGOVOR_AUTO_PK;
+
+--------------------------------------------------------
+-- KREIRANJE TABELA
+--------------------------------------------------------
+CREATE TABLE FOTOGRAFIJA(
+ID number(10, 0),
+Sadrzaj BLOB NOT NULL,
+IDNekretnine number(10,0) NOT NULL
+);
+CREATE TABLE PRAVNI_ZASTUPNIK(
+MBR varchar2(13 BYTE) UNIQUE NOT NULL,
+Ime varchar2(15 BYTE) NOT NULL,
+Prezime varchar2(15 BYTE) NOT NULL,
+Naziv_adv_kancelarije varchar2(30 BYTE) NOT NULL,
+Adresa_adv_kancelarije varchar2(30 BYTE) NOT NULL,
+ID number(10,0)
+);
+CREATE TABLE NEKRETNINA(
+Grad_i_lokacija varchar2(200 BYTE) NOT NULL,
+Ulica varchar2(100 BYTE) NOT NULL,
+Broj number(4,0) NOT NULL,
+ID number(10,0),
+Broj_katastarske_parcele varchar2(10 BYTE) NOT NULL,
+Katastarska_opstina varchar2(50 BYTE) NOT NULL,
+Tip varchar2(13 BYTE) NOT NULL,
+Kvadratura decimal(10,5) NOT NULL,
+Datum_izgradnje date NOT NULL,
+Cena number(10,0) NOT NULL,
+Sprat_Broj_spratova varchar2(15 BYTE) NOT NULL,
+Opis varchar2(512 BYTE) NOT NULL,
+Prodaja_ili_iznajmljivanje varchar2(20 BYTE) NOT NULL,
+ID_ugovora varchar2(20 BYTE) UNIQUE NOT NULL,
+IDVlasnika number(10,0) NOT NULL,
+IDAgenta number(10,0) NOT NULL,
+Godina number(4, 0),
+Datum_do date,
+Datum_od date,
+Max_br_meseci number(3,0),
+Fizickim_licima_ili_firmama varchar2(20 BYTE)
+);
+CREATE TABLE AGENT(
+Ime varchar2(15 BYTE) NOT NULL,
+Prezime varchar2(15 BYTE) NOT NULL,
+Radni_staz_u_agenciji number(2, 0) NOT NULL,
+Telefon varchar2(15 BYTE) UNIQUE NOT NULL,
+Email varchar2(50 BYTE) UNIQUE NOT NULL,
+ID number(10, 0),
+Sifra varchar2(50 BYTE) NOT NULL
+);
+
+CREATE TABLE ADMINISTRATOR(
+ID number(10, 0),
+Sifra varchar2(50 BYTE) NOT NULL
+);
+CREATE TABLE KLIJENT(
+Email varchar2(50 BYTE) UNIQUE NOT NULL,
+Sifra varchar2(50 BYTE) NOT NULL,
+Ime varchar2(15 BYTE) NOT NULL,
+Prezime varchar2(15 BYTE) NOT NULL,
+Adresa varchar2(255 BYTE) NOT NULL,
+Telefon varchar2(15 BYTE) UNIQUE NOT NULL,
+Kupac varchar2(2 BYTE) NOT NULL,
+Prodavac varchar2(2 BYTE) NOT NULL,
+ID number(10, 0)
+);
+CREATE TABLE UGOVOR(
+Ime_i_prezime_notara varchar2(50 BYTE) NOT NULL,
+Adresa_notara varchar2(255 BYTE) NOT NULL,
+Datum date NOT NULL,
+Broj number(10, 0),
+Naknada_za_agenciju number(15, 0) NOT NULL,
+Bonus_za_agenta number(10, 0) NOT NULL,
+IDNekretnine number(10,0) UNIQUE NOT NULL,
+IDVlasnika number(10,0) NOT NULL,
+IDZastupnikaVlasnik number(10,0),
+IDZastupnikaKupacIznajmljivac number(10,0),
+IDKupca_Iznajmljivaca number(10,0) NOT NULL
+);
+
+CREATE TABLE PRODAJNI_UGOVOR(
+Cena number(15, 0) NOT NULL,
+Naknada_za_notara number(5, 0) NOT NULL,
+Broj number(10, 0)
+);
+CREATE TABLE IZNAJMLJIVANJE_UGOVOR(
+Period_iznajmljivanja number(3, 0) NOT NULL,
+Mesecna_renta number(5, 0) NOT NULL,
+Broj number(10, 0)
+);
+CREATE TABLE POTPISANI_UGOVORI(
+Potpisani_ugovori varchar2(20 BYTE) NOT NULL,
+IDAgenta number(10, 0) NOT NULL,
+Kod number(10, 0)
+);
+--------------------------------------------------------
+-- DODAVANJE PRIMARNOG KLJUCA
+--------------------------------------------------------
+ALTER TABLE FOTOGRAFIJA ADD PRIMARY KEY(ID) ENABLE;
+ALTER TABLE PRAVNI_ZASTUPNIK ADD PRIMARY KEY(ID) ENABLE;
+ALTER TABLE NEKRETNINA ADD PRIMARY KEY(ID) ENABLE;
+ALTER TABLE AGENT ADD PRIMARY KEY(ID) ENABLE;
+ALTER TABLE ADMINISTRATOR ADD PRIMARY KEY(ID) ENABLE;
+ALTER TABLE KLIJENT ADD PRIMARY KEY(ID) ENABLE;
+ALTER TABLE UGOVOR ADD PRIMARY KEY(Broj) ENABLE;
+ALTER TABLE PRODAJNI_UGOVOR ADD PRIMARY KEY(Broj) ENABLE;
+ALTER TABLE IZNAJMLJIVANJE_UGOVOR ADD PRIMARY KEY(Broj) ENABLE;
+ALTER TABLE POTPISANI_UGOVORI ADD PRIMARY KEY(Kod) ENABLE;
+--------------------------------------------------------
+-- OGRANICENJA
+--------------------------------------------------------
+ALTER TABLE FOTOGRAFIJA ADD CONSTRAINT IDNekretnine_FK FOREIGN KEY(IDNekretnine)
+REFERENCES NEKRETNINA(ID) ON DELETE CASCADE ENABLE;
+ALTER TABLE NEKRETNINA ADD CONSTRAINT IDVlasnika_FK FOREIGN KEY(IDVlasnika)
+REFERENCES KLIJENT(ID) ON DELETE CASCADE ENABLE;
+ALTER TABLE NEKRETNINA ADD CONSTRAINT IDAgenta_FK FOREIGN KEY(IDAgenta) REFERENCES
+AGENT(ID) ON DELETE CASCADE ENABLE;
+ALTER TABLE NEKRETNINA ADD CONSTRAINT TIP_CHK CHECK (Tip IN ('STAN', 'KUCA', 'POSLOVNI
+PROSTOR', 'DUPLEKS', 'ZEMLJISTE', 'MAGACIN'))ENABLE;
+ALTER TABLE NEKRETNINA ADD CONSTRAINT PRODAJAIZNAJMLJIVANJE_CHK CHECK
+(Prodaja_ili_iznajmljivanje IN ('PRODAJA','IZNAJMLJIVANJE KRACE', 'IZNAJMLJIVANJE DUZE'))ENABLE;
+ALTER TABLE NEKRETNINA ADD CONSTRAINT FirmeFizickaLica_CHK CHECK
+(Fizickim_licima_ili_firmama IN ('FIRMA','FIZICKO LICE')) ENABLE;
+ALTER TABLE KLIJENT ADD CONSTRAINT Prodavac_CHK CHECK (Prodavac IN ('Da','Ne')) ENABLE;
+ALTER TABLE KLIJENT ADD CONSTRAINT Kupac_CHK CHECK (Kupac IN ('Da','Ne')) ENABLE;
+ALTER TABLE UGOVOR ADD CONSTRAINT IDNekretnine_Ugovor_FK FOREIGN KEY(IDNekretnine)
+REFERENCES NEKRETNINA(ID) ON DELETE CASCADE ENABLE;
+ALTER TABLE UGOVOR ADD CONSTRAINT IDVlasnika_Ugovor_FK FOREIGN KEY(IDVlasnika)
+REFERENCES KLIJENT(ID) ON DELETE CASCADE ENABLE;
+ALTER TABLE UGOVOR ADD CONSTRAINT IDZastupnikaVlasnik_FK FOREIGN
+KEY(IDZastupnikaVlasnik) REFERENCES PRAVNI_ZASTUPNIK(ID) ON DELETE CASCADE ENABLE;
+ALTER TABLE UGOVOR ADD CONSTRAINT IDZastKupacIznajmlj_FK FOREIGN
+KEY(IDZastupnikaKupacIznajmljivac) REFERENCES PRAVNI_ZASTUPNIK(ID) ON DELETE CASCADE ENABLE;
+ALTER TABLE UGOVOR ADD CONSTRAINT IDKupca_Iznajmljivaca_FK FOREIGN
+KEY(IDKupca_Iznajmljivaca) REFERENCES KLIJENT(ID) ON DELETE CASCADE ENABLE;
+ALTER TABLE PRODAJNI_UGOVOR ADD CONSTRAINT Broj_FK FOREIGN KEY(Broj) REFERENCES
+UGOVOR(Broj) ON DELETE CASCADE ENABLE;
+ALTER TABLE IZNAJMLJIVANJE_UGOVOR ADD CONSTRAINT Broj_Ugovora_FK FOREIGN KEY(Broj)
+REFERENCES UGOVOR(Broj) ON DELETE CASCADE ENABLE;
+ALTER TABLE POTPISANI_UGOVORI ADD CONSTRAINT IDAgenta_Ugovori_FK FOREIGN
+KEY(IDAgenta) REFERENCES AGENT(ID) ON DELETE CASCADE ENABLE;
+
+--------------------------------------------------------
+-- DDL za Trigger FOTOGRAFIJA_AUTO_PK
+--------------------------------------------------------
+CREATE SEQUENCE "FOTOGRAFIJA_ID_SEQ" MINVALUE 1 MAXVALUE
+9999999999999999999999999999
+INCREMENT BY 1 START WITH 1 CACHE 20 NOORDER NOCYCLE ;
+CREATE OR REPLACE TRIGGER "FOTOGRAFIJA_AUTO_PK"
+ BEFORE INSERT
+ ON FOTOGRAFIJA
+ REFERENCING NEW AS NEW
+ FOR EACH ROW
+BEGIN
+ SELECT FOTOGRAFIJA_ID_SEQ.NEXTVAL INTO :NEW.ID FROM DUAL;
+END;
+/
+ALTER TRIGGER "FOTOGRAFIJA_AUTO_PK" ENABLE;
+--------------------------------------------------------
+-- DDL za Trigger PRAVNI_ZASTUPNIK_AUTO_PK
+--------------------------------------------------------
+CREATE SEQUENCE "PRAVNI_ZASTUPNIK_ID_SEQ" MINVALUE 1 MAXVALUE
+9999999999999999999999999999
+INCREMENT BY 1 START WITH 1 CACHE 20 NOORDER NOCYCLE ;
+CREATE OR REPLACE TRIGGER "PRAVNI_ZASTUPNIK_AUTO_PK"
+ BEFORE INSERT
+ ON PRAVNI_ZASTUPNIK
+ REFERENCING NEW AS NEW
+ FOR EACH ROW
+BEGIN
+ SELECT PRAVNI_ZASTUPNIK_ID_SEQ.NEXTVAL INTO :NEW.ID FROM DUAL;
+END;
+/
+ALTER TRIGGER "PRAVNI_ZASTUPNIK_AUTO_PK" ENABLE;
+--------------------------------------------------------
+-- DDL za Trigger NEKRETNINA_AUTO_PK
+--------------------------------------------------------
+CREATE SEQUENCE "NEKRETNINA_ID_SEQ" MINVALUE 1 MAXVALUE
+9999999999999999999999999999
+INCREMENT BY 1 START WITH 1 CACHE 20 NOORDER NOCYCLE ;
+CREATE OR REPLACE TRIGGER "NEKRETNINA_AUTO_PK"
+ BEFORE INSERT
+ ON NEKRETNINA
+ REFERENCING NEW AS NEW
+ FOR EACH ROW
+BEGIN
+ SELECT NEKRETNINA_ID_SEQ.NEXTVAL INTO :NEW.ID FROM DUAL;
+END;
+/
+ALTER TRIGGER "NEKRETNINA_AUTO_PK" ENABLE;
+--------------------------------------------------------
+-- DDL za Trigger AGENT_AUTO_PK
+--------------------------------------------------------
+CREATE SEQUENCE "AGENT_ID_SEQ" MINVALUE 1 MAXVALUE 9999999999999999999999999999
+INCREMENT BY 1 START WITH 1 CACHE 20 NOORDER NOCYCLE ;
+CREATE OR REPLACE TRIGGER "AGENT_AUTO_PK"
+ BEFORE INSERT
+ ON AGENT
+ REFERENCING NEW AS NEW
+ FOR EACH ROW
+BEGIN
+ SELECT AGENT_ID_SEQ.NEXTVAL INTO :NEW.ID FROM DUAL;
+END;
+/
+ALTER TRIGGER "AGENT_AUTO_PK" ENABLE;
+--------------------------------------------------------
+-- DDL za Trigger ADMINISTRATOR_AUTO_PK
+--------------------------------------------------------
+CREATE SEQUENCE "ADMINISTRATOR_ID_SEQ" MINVALUE 1 MAXVALUE
+9999999999999999999999999999
+INCREMENT BY 1 START WITH 1 CACHE 20 NOORDER NOCYCLE ;
+CREATE OR REPLACE TRIGGER "ADMINISTRATOR_AUTO_PK"
+ BEFORE INSERT
+ ON ADMINISTRATOR
+REFERENCING NEW AS NEW
+ FOR EACH ROW
+BEGIN
+ SELECT ADMINISTRATOR_ID_SEQ.NEXTVAL INTO :NEW.ID FROM DUAL;
+END;
+/
+ALTER TRIGGER "ADMINISTRATOR_AUTO_PK" ENABLE;
+
+--------------------------------------------------------
+-- DDL za Trigger KLIJENT_AUTO_PK
+--------------------------------------------------------
+CREATE SEQUENCE "KLIJENT_ID_SEQ" MINVALUE 1 MAXVALUE 9999999999999999999999999999
+INCREMENT BY 1 START WITH 1 CACHE 20 NOORDER NOCYCLE ;
+CREATE OR REPLACE TRIGGER "KLIJENT_AUTO_PK"
+ BEFORE INSERT
+ ON KLIJENT
+ REFERENCING NEW AS NEW
+ FOR EACH ROW
+BEGIN
+ SELECT KLIJENT_ID_SEQ.NEXTVAL INTO :NEW.ID FROM DUAL;
+END;
+/
+ALTER TRIGGER "KLIJENT_AUTO_PK" ENABLE;
+--------------------------------------------------------
+-- DDL za Trigger UGOVOR_AUTO_PK
+--------------------------------------------------------
+CREATE SEQUENCE "UGOVOR_ID_SEQ" MINVALUE 1 MAXVALUE 9999999999999999999999999999
+INCREMENT BY 1 START WITH 1 CACHE 20 NOORDER NOCYCLE ;
+CREATE OR REPLACE TRIGGER "UGOVOR_AUTO_PK"
+ BEFORE INSERT
+ ON UGOVOR
+ REFERENCING NEW AS NEW
+ FOR EACH ROW
+BEGIN
+ SELECT UGOVOR_ID_SEQ.NEXTVAL INTO :NEW.Broj FROM DUAL;
+END;
+/
+ALTER TRIGGER "UGOVOR_AUTO_PK" ENABLE;
+--------------------------------------------------------
+-- DODAVANJE PODATAKA U TABELU PRAVNI_ZASTUPNIK
+--------------------------------------------------------
+INSERT INTO PRAVNI_ZASTUPNIK (MBR, IME, PREZIME, NAZIV_ADV_KANCELARIJE,
+ADRESA_ADV_KANCELARIJE)
+VALUES ('0709723648741', 'Djordje', 'Radovanovic', 'Radovanovic i Sin', 'Ivana Radovanovica 15');
+INSERT INTO PRAVNI_ZASTUPNIK (MBR, IME, PREZIME, NAZIV_ADV_KANCELARIJE,
+ADRESA_ADV_KANCELARIJE)
+VALUES ('0904841284781', 'Marko', 'Markovic', 'Markovici Zaštitnici', 'Nikole Tesle BB');
+INSERT INTO PRAVNI_ZASTUPNIK (MBR, IME, PREZIME, NAZIV_ADV_KANCELARIJE,
+ADRESA_ADV_KANCELARIJE)
+VALUES ('0310698741123', 'Matija', 'Antic', 'Advokatski Zakon', 'Cara Dušana 3');
+INSERT INTO PRAVNI_ZASTUPNIK (MBR, IME, PREZIME, NAZIV_ADV_KANCELARIJE,
+ADRESA_ADV_KANCELARIJE)
+VALUES ('0107713486179', 'Ljubica', 'Nikolic', 'Advokatska kancelarija Odbrana', 'Paje Jovanovica 19');
+INSERT INTO PRAVNI_ZASTUPNIK (MBR, IME, PREZIME, NAZIV_ADV_KANCELARIJE,
+ADRESA_ADV_KANCELARIJE)
+VALUES ('0909887418657', 'Ivan', 'Stojanovic', 'Advokati Spasioci', 'Pobedina 15');
+INSERT INTO PRAVNI_ZASTUPNIK (MBR, IME, PREZIME, NAZIV_ADV_KANCELARIJE,
+ADRESA_ADV_KANCELARIJE)
+VALUES ('1503846472189', 'Brankica', 'Lukic', 'Advokatska kancelarija Lukic', 'Carice Milice BB');
+--------------------------------------------------------
+-- DODAVANJE PODATAKA U TABELU AGENT
+--------------------------------------------------------
+INSERT INTO AGENT (IME, PREZIME, RADNI_STAZ_U_AGENCIJI, TELEFON,EMAIL,SIFRA)
+VALUES ('Zdravko', 'Dragic', '5', '064-3497518', 'zdravkodragic5@gmail.com', 'dragic65');
+INSERT INTO AGENT (IME, PREZIME, RADNI_STAZ_U_AGENCIJI, TELEFON,EMAIL,SIFRA)
+VALUES ('Jelisaveta', 'Nikolic', '1', '062-5189674', 'jelisavetanikolic18@yahoo.com', 'jelisavetaNi');
+INSERT INTO AGENT (IME, PREZIME, RADNI_STAZ_U_AGENCIJI, TELEFON,EMAIL,SIFRA)
+VALUES ('Branislav', 'Ivanovic', '3', '063-8974124', 'bane21905@gmail.com', 'baneIvanovic2');
+INSERT INTO AGENT (IME, PREZIME, RADNI_STAZ_U_AGENCIJI, TELEFON,EMAIL,SIFRA)
+VALUES ('Nikola', 'Maksimovic', '3', '064-3396437', 'makimovic984@outlook.com', 'maksi984');
+INSERT INTO AGENT (IME, PREZIME, RADNI_STAZ_U_AGENCIJI, TELEFON,EMAIL,SIFRA)
+VALUES ('Aleksandar', 'Mitrovic', '7', '069-7847618', 'alexmitrovic32@gmail.com', 'mitar32');
+--------------------------------------------------------
+-- DODAVANJE PODATAKA U TABELU KLIJENT
+--------------------------------------------------------
+INSERT INTO KLIJENT (IME, PREZIME, ADRESA, TELEFON, EMAIL, SIFRA, KUPAC, PRODAVAC)
+VALUES ('Aleksandar', 'Katai', '27. marta', '064-3500444', 'katai17@gmail.com', 'katai17', 'Da', 'Ne');
+INSERT INTO KLIJENT (IME, PREZIME, ADRESA, TELEFON, EMAIL, SIFRA, KUPAC, PRODAVAC)
+VALUES ('Aleksandar', 'Kolarov', 'Branislava Nušica 1', '061-6481474', 'alexkolarov14@gmail.com',
+'alexkapiten2', 'Da', 'Ne');
+INSERT INTO KLIJENT (IME, PREZIME, ADRESA, TELEFON, EMAIL, SIFRA, KUPAC, PRODAVAC)
+VALUES ('Radomir', 'Antic', 'Mihajla Pupina BB', '064-4914419', 'antic46@yahoo.com', 'juznaAfrika2010', 'Ne',
+'Da');
+INSERT INTO KLIJENT (IME, PREZIME, ADRESA, TELEFON, EMAIL, SIFRA, KUPAC, PRODAVAC)
+VALUES ('Vladimir', 'Stojkovic', 'Dostojevskog 9', '064-3285746', 'vladastojkovic1@outlook.com', 'stojke1', 'Da',
+'Ne');
+INSERT INTO KLIJENT (IME, PREZIME, ADRESA, TELEFON, EMAIL, SIFRA, KUPAC, PRODAVAC)
+VALUES ('Nemanja', 'Matic', 'Puškinova 14', '064-4714820', 'matiæutd32@gmail.com', 'matke32', 'Ne', 'Da');
+INSERT INTO KLIJENT (IME, PREZIME, ADRESA, TELEFON, EMAIL, SIFRA, KUPAC, PRODAVAC)
+VALUES ('Nemanja', 'Gudelj', 'Skopljanska 25', '064-6471499', 'gudelj14@gmail.com', 'gudeljcar14', 'Ne', 'Da');
+--------------------------------------------------------
+-- DODAVANJE PODATAKA U TABELU NEKRETNINA
+--------------------------------------------------------
+INSERT INTO NEKRETNINA (GRAD_I_LOKACIJA, ULICA, BROJ, BROJ_KATASTARSKE_PARCELE,
+KATASTARSKA_OPSTINA, TIP, KVADRATURA, DATUM_IZGRADNJE, CENA,
+SPRAT_BROJ_SPRATOVA, OPIS, PRODAJA_ILI_IZNAJMLJIVANJE, ID_UGOVORA, IDVLASNIKA,
+IDAGENTA)
+VALUES ('Niš Medijana', 'Duška Radovica', '25', '25/4', 'Brzi Brod', 'STAN', '60', TO_DATE('07/2003','mm/yy'),
+'50000', '1vi/5', 'Dvosoban stan na prvom spratu lepe zgrade. Odvojena spavaca soba i velika dnevna soba i odvojeni
+kupatilo i wc.', 'PRODAJA', '15/2018', '3', '4');
+INSERT INTO NEKRETNINA (GRAD_I_LOKACIJA, ULICA, BROJ, BROJ_KATASTARSKE_PARCELE,
+KATASTARSKA_OPSTINA, TIP, KVADRATURA, DATUM_IZGRADNJE, CENA,
+SPRAT_BROJ_SPRATOVA, OPIS, PRODAJA_ILI_IZNAJMLJIVANJE, ID_UGOVORA, IDVLASNIKA,
+IDAGENTA)
+VALUES ('Niš Palilula', 'Kneza Lazara', '4', '2512/4', 'Bubanj', 'KUCA', '150', TO_DATE('15/08/1996','dd/mm/yy'),
+'150000', '3/3', 'Velika kuca sa 4 odvojene spavace sobe, 2 dnevne sobe, 3 kupatila, 2 wc-a i garažom. Kuca ima
+samo osnovne stvari. Kuca se nalazi na prelepoj lokaciji odmah iza osnovne škole.', 'PRODAJA', '43/2017', '3', '2');
+INSERT INTO NEKRETNINA (GRAD_I_LOKACIJA, ULICA, BROJ, BROJ_KATASTARSKE_PARCELE,
+KATASTARSKA_OPSTINA, TIP, KVADRATURA, DATUM_IZGRADNJE, CENA,
+SPRAT_BROJ_SPRATOVA, OPIS, PRODAJA_ILI_IZNAJMLJIVANJE, ID_UGOVORA, IDVLASNIKA,
+IDAGENTA,MAX_BR_MESECI,FIZICKIM_LICIMA_ILI_FIRMAMA)
+VALUES ('Niš Medijana', 'Vardarska', '65', '1334/65', 'Brzi Brod', 'DUPLEKS', '120',
+TO_DATE('22/01/2010','dd/mm/yy'), '520', '3ti/6', 'Duplex u samom centru grada. Poseduje 2 spavace sobe na
+prvom spratu i 3 spavace sobe na drugom spratu. Na prvom spratu se nalazi velika dnevna soba i wc, a na spratu se
+nalaze i 2 kupatila. Izdaje se na duži vremenski period.', 'IZNAJMLJIVANJE DUZE', '16/2018', '6', '3', '24', 'FIZICKO LICE');
+
+INSERT INTO NEKRETNINA (GRAD_I_LOKACIJA, ULICA, BROJ, BROJ_KATASTARSKE_PARCELE,
+KATASTARSKA_OPSTINA, TIP, KVADRATURA, DATUM_IZGRADNJE, CENA,
+SPRAT_BROJ_SPRATOVA, OPIS, PRODAJA_ILI_IZNAJMLJIVANJE, ID_UGOVORA, IDVLASNIKA,
+IDAGENTA)
+VALUES ('Niš Palilula', 'Vranjanska', '14', '341/14', 'Mramor', 'KUCA', '200', TO_DATE('03/04/1990','dd/mm/yy'),
+'320000', '2/2', 'Kuca na dva sprata u mirnom delu grada. Kuca poseduje 6 spavacih soba, 1 veluku dnevnu sobu,
+kuhinja i trpezarija su spojene, 2 kupatila, gražu, veliko dvorište sa bazenom i ostavu.', 'PRODAJA', '17/2018', '5',
+'5');
+INSERT INTO NEKRETNINA (GRAD_I_LOKACIJA, ULICA, BROJ, BROJ_KATASTARSKE_PARCELE,
+KATASTARSKA_OPSTINA, TIP, KVADRATURA, DATUM_IZGRADNJE, CENA,
+SPRAT_BROJ_SPRATOVA, OPIS, PRODAJA_ILI_IZNAJMLJIVANJE, ID_UGOVORA, IDVLASNIKA,
+IDAGENTA, DATUM_OD, DATUM_DO, GODINA)
+VALUES ('Niš Medijana', 'Zelengorska', '18', '3864/18', 'Brzi Brod', 'STAN', '72',
+TO_DATE('15/09/2017','dd/mm/yy'), '300', '10ti/15', 'Trosoban stan u samom centru grada. Poseduje 3 odvojene
+spavace sobe, velika dnevna soba sa kuhinjom, ostavu, wc i dve terase. Pogodno za 3 studenta ili porodicu sa
+decom. U kiriju su uracunati i troškovi.', 'IZNAJMLJIVANJE KRACE', '18/2018', '6', '3', TO_DATE('12/05','dd/mm'), TO_DATE('20/05','dd/mm'), '2018');
+--------------------------------------------------------
+-- DODAVANJE PODATAKA U TABELU ADMINISTRATOR
+--------------------------------------------------------
+INSERT INTO ADMINISTRATOR (SIFRA)
+VALUES ('administratorCar');
+--------------------------------------------------------
+-- DODAVANJE PODATAKA U TABELU UGOVOR
+--------------------------------------------------------
+INSERT INTO UGOVOR (IME_I_PREZIME_NOTARA, ADRESA_NOTARA, DATUM,
+NAKNADA_ZA_AGENCIJU, BONUS_ZA_AGENTA, IDNEKRETNINE, IDVLASNIKA,
+IDZASTUPNIKAVLASNIK, IDZASTUPNIKAKUPACIZNAJMLJIVAC, IDKUPCA_IZNAJMLJIVACA)
+VALUES ('Ljubo Antic', 'Vojislava Miloševica 15', TO_DATE('18/03/2018', 'dd/mm/yy'), '1000', '50', '1', '3', '1', '3',
+'3');
+INSERT INTO UGOVOR (IME_I_PREZIME_NOTARA, ADRESA_NOTARA, DATUM,
+NAKNADA_ZA_AGENCIJU, BONUS_ZA_AGENTA, IDNEKRETNINE, IDVLASNIKA,
+IDZASTUPNIKAVLASNIK, IDZASTUPNIKAKUPACIZNAJMLJIVAC, IDKUPCA_IZNAJMLJIVACA)
+VALUES ('Dubravko Kovac', 'Vojvode Koste Vojinovica BB', TO_DATE('15/01/2018', 'dd/mm/yy'), '5000', '550',
+'2', '3', '2', '1', '4');
+INSERT INTO UGOVOR (IME_I_PREZIME_NOTARA, ADRESA_NOTARA, DATUM,
+NAKNADA_ZA_AGENCIJU, BONUS_ZA_AGENTA, IDNEKRETNINE, IDVLASNIKA,
+IDZASTUPNIKAVLASNIK, IDZASTUPNIKAKUPACIZNAJMLJIVAC, IDKUPCA_IZNAJMLJIVACA)
+VALUES ('Rade Babic', 'Ustanicka 14', TO_DATE('02/02/2018', 'dd/mm/yy'), '520', '20', '3', '6', NULL, NULL, '1');
+INSERT INTO UGOVOR (IME_I_PREZIME_NOTARA, ADRESA_NOTARA, DATUM,
+NAKNADA_ZA_AGENCIJU, BONUS_ZA_AGENTA, IDNEKRETNINE, IDVLASNIKA,
+IDZASTUPNIKAVLASNIK, IDZASTUPNIKAKUPACIZNAJMLJIVAC, IDKUPCA_IZNAJMLJIVACA)
+VALUES ('Andjela Miloševic', 'Trg Stevana Sremca 5', TO_DATE('26/03/2018', 'dd/mm/yy'), '10000', '1250', '4',
+'5', '5', '4', '4');
+INSERT INTO UGOVOR (IME_I_PREZIME_NOTARA, ADRESA_NOTARA, DATUM,
+NAKNADA_ZA_AGENCIJU, BONUS_ZA_AGENTA, IDNEKRETNINE, IDVLASNIKA,
+IDZASTUPNIKAVLASNIK, IDZASTUPNIKAKUPACIZNAJMLJIVAC, IDKUPCA_IZNAJMLJIVACA)
+VALUES ('Željko Crnèevic', 'Strumska 25', TO_DATE('19/12/2017', 'dd/mm/yy'), '300', '10', '5', '6', '3', NULL, '1');
+--------------------------------------------------------
+-- DODAVANJE PODATAKA U TABELU PRODAJNI_UGOVOR
+--------------------------------------------------------
+INSERT INTO PRODAJNI_UGOVOR (BROJ, CENA, NAKNADA_ZA_NOTARA)
+VALUES ('1', '50000', '500');
+INSERT INTO PRODAJNI_UGOVOR (BROJ, CENA, NAKNADA_ZA_NOTARA)
+VALUES ('2', '150000', '1000');
+INSERT INTO PRODAJNI_UGOVOR (BROJ, CENA, NAKNADA_ZA_NOTARA)
+VALUES ('4', '320000', '2000');
+--------------------------------------------------------
+-- DODAVANJE PODATAKA U TABELU IZNAJMLJIVANJE_UGOVOR
+--------------------------------------------------------
+INSERT INTO IZNAJMLJIVANJE_UGOVOR (BROJ, MESECNA_RENTA, PERIOD_IZNAJMLJIVANJA)
+VALUES ('3', '520', '50');
+INSERT INTO IZNAJMLJIVANJE_UGOVOR (BROJ, MESECNA_RENTA, PERIOD_IZNAJMLJIVANJA)
+VALUES ('5', '300', '20');
+--------------------------------------------------------
+-- DODAVANJE PODATAKA U TABELU POTPISANI_UGOVORI
+--------------------------------------------------------
+INSERT INTO POTPISANI_UGOVORI (Potpisani_ugovori, IDAgenta, Kod)
+VALUES ('15/2018', '4', '20181203');
+INSERT INTO POTPISANI_UGOVORI (Potpisani_ugovori, IDAgenta, Kod)
+VALUES ('43/2017', '2', '20170907');
+INSERT INTO POTPISANI_UGOVORI (Potpisani_ugovori, IDAgenta, Kod)
+VALUES ('16/2018', '3', '20160110');
+
+INSERT INTO POTPISANI_UGOVORI (Potpisani_ugovori, IDAgenta, Kod)
+VALUES ('17/2018', '5', '20170306');
+INSERT INTO POTPISANI_UGOVORI (Potpisani_ugovori, IDAgenta, Kod)
+VALUES ('18/2018', '3', '20182509');
+--------------------------------------------------------
+-- DODAVANJE PODATAKA U TABELU FOTOGRAFIJE
+--------------------------------------------------------
+INSERT INTO FOTOGRAFIJA (Sadrzaj, IDNekretnine)
+VALUES (utl_raw.cast_to_raw('C:\slike\nek1.jpg'), 1);
+INSERT INTO FOTOGRAFIJA (Sadrzaj, IDNekretnine)
+VALUES (utl_raw.cast_to_raw('C:\slike\nek1-2.jpg'), 1);
+INSERT INTO FOTOGRAFIJA (Sadrzaj, IDNekretnine)
+VALUES (utl_raw.cast_to_raw('C:\slike\nek1-3.jpg'), 1);
+INSERT INTO FOTOGRAFIJA (Sadrzaj, IDNekretnine)
+VALUES (utl_raw.cast_to_raw('C:\slike\nek2.jpg'), 2);
+INSERT INTO FOTOGRAFIJA (Sadrzaj, IDNekretnine)
+VALUES (utl_raw.cast_to_raw('C:\slike\nek2-1.jpg'), 2);
+INSERT INTO FOTOGRAFIJA (Sadrzaj, IDNekretnine)
+VALUES (utl_raw.cast_to_raw('C:\slike\nek2-2.jpg'), 2);
+INSERT INTO FOTOGRAFIJA (Sadrzaj, IDNekretnine)
+VALUES (utl_raw.cast_to_raw('C:\slike\nek2-3.jpg'), 2);
+INSERT INTO FOTOGRAFIJA (Sadrzaj, IDNekretnine)
+VALUES (utl_raw.cast_to_raw('C:\slike\nek2-4.jpg'), 2);
+INSERT INTO FOTOGRAFIJA (Sadrzaj, IDNekretnine)
+VALUES (utl_raw.cast_to_raw('C:\slike\nek3-1.jpg'), 3);
+INSERT INTO FOTOGRAFIJA (Sadrzaj, IDNekretnine)
+VALUES (utl_raw.cast_to_raw('C:\slike\nek3-2.jpg'), 3);
+INSERT INTO FOTOGRAFIJA (Sadrzaj, IDNekretnine)
+VALUES (utl_raw.cast_to_raw('C:\slike\nek3-3.jpg'), 3);
+INSERT INTO FOTOGRAFIJA (Sadrzaj, IDNekretnine)
+VALUES (utl_raw.cast_to_raw('C:\slike\nek3-4.jpg'), 3);
+INSERT INTO FOTOGRAFIJA (Sadrzaj, IDNekretnine)
+VALUES (utl_raw.cast_to_raw('C:\slike\nek3-5.jpg'), 3);
+INSERT INTO FOTOGRAFIJA (Sadrzaj, IDNekretnine)
+VALUES (utl_raw.cast_to_raw('C:\slike\nek4.jpg'), 4);
+INSERT INTO FOTOGRAFIJA (Sadrzaj, IDNekretnine)
+VALUES (utl_raw.cast_to_raw('C:\slike\nek4-1.jpg'), 4);
+INSERT INTO FOTOGRAFIJA (Sadrzaj, IDNekretnine)
+VALUES (utl_raw.cast_to_raw('C:\slike\nek4-2.jpg'), 4);
+INSERT INTO FOTOGRAFIJA (Sadrzaj, IDNekretnine)
+VALUES (utl_raw.cast_to_raw('C:\slike\nek4-3.jpg'), 4);
+INSERT INTO FOTOGRAFIJA (Sadrzaj, IDNekretnine)
+VALUES (utl_raw.cast_to_raw('C:\slike\nek5-1.jpg'), 5);
+INSERT INTO FOTOGRAFIJA (Sadrzaj, IDNekretnine)
+VALUES (utl_raw.cast_to_raw('C:\slike\nek5-2.jpg'), 5);
+INSERT INTO FOTOGRAFIJA (Sadrzaj, IDNekretnine)
+VALUES (utl_raw.cast_to_raw('C:\slike\nek5-3.jpg'), 5);
