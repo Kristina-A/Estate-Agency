@@ -5,3 +5,7 @@
 - There are three roles, client, agent and admin.
 - After login different types of services are available.
 - Without logging in you can load or add some information. You can also get some information about relations.
+
+## Home page
+
+![nekr](https://user-images.githubusercontent.com/37186937/76310582-57dbdb00-62cf-11ea-97ec-2dfb8874bfcc.PNG)
