@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2000
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgencijaZaNekretnine", "AgencijaZaNekretnine\AgencijaZaNekretnine.csproj", "{15AED6DE-10F5-419B-80C7-BA0EC5BFD06D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgencijaTest", "AgencijaTest\AgencijaTest.csproj", "{EACFC177-0876-4017-8677-EA44A729EDFD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{15AED6DE-10F5-419B-80C7-BA0EC5BFD06D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{15AED6DE-10F5-419B-80C7-BA0EC5BFD06D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{15AED6DE-10F5-419B-80C7-BA0EC5BFD06D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{15AED6DE-10F5-419B-80C7-BA0EC5BFD06D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EACFC177-0876-4017-8677-EA44A729EDFD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EACFC177-0876-4017-8677-EA44A729EDFD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EACFC177-0876-4017-8677-EA44A729EDFD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EACFC177-0876-4017-8677-EA44A729EDFD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {1837067B-4074-487C-85AA-B4C15BBD3C14}
+	EndGlobalSection
+EndGlobal
